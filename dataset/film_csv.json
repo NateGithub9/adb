@@ -1,5 +1,5 @@
 {
-	"name": "film",
+	"name": "film_csv",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorage1",
