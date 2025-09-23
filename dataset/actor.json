@@ -1,0 +1,41 @@
+{
+	"name": "actor",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "actor.csv",
+				"container": "csvfiles01"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "actor_id",
+				"type": "String"
+			},
+			{
+				"name": "first_name",
+				"type": "String"
+			},
+			{
+				"name": "last_name",
+				"type": "String"
+			},
+			{
+				"name": "last_update",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

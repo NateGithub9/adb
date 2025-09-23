@@ -1,0 +1,9 @@
+{
+	"name": "adf230925",
+	"location": "swedencentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "5255eace-e7f7-4a42-9179-6be3564e4e76",
+		"tenantId": "72db22d5-53b6-493c-bbb2-f36644f1f812"
+	}
+}
