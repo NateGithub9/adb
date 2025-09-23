@@ -1,0 +1,131 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "film"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "language"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "DWH",
+						"type": "LinkedServiceReference"
+					},
+					"name": "DWH"
+				}
+			],
+			"transformations": [
+				{
+					"name": "join1"
+				},
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          film_id as integer,",
+				"          title as string,",
+				"          description as string,",
+				"          release_year as string,",
+				"          language_id as integer,",
+				"          original_language_id as integer,",
+				"          rental_duration as integer,",
+				"          rental_rate as decimal(4,2),",
+				"          length as short,",
+				"          replacement_cost as decimal(5,2),",
+				"          rating as string,",
+				"          special_features as string,",
+				"          last_update as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'film',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> film",
+				"source(output(",
+				"          language_id as integer,",
+				"          name as string,",
+				"          last_update as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'language',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> language",
+				"film, language join(ERROR_FUNCTION('') == ERROR_FUNCTION(''),",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 select(mapColumn(",
+				"          SK_film = film_id,",
+				"          title,",
+				"          description,",
+				"          release_year,",
+				"          language_id = film@language_id,",
+				"          original_language_id,",
+				"          rental_duration,",
+				"          rental_rate,",
+				"          length_min = length,",
+				"          replacement_cost,",
+				"          rating,",
+				"          special_features,",
+				"          last_update = film@last_update,",
+				"          language_id = language@language_id,",
+				"          language = name,",
+				"          last_update = language@last_update",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'Dim_Film',",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     deletable: false,",
+				"     upsertable: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          SK_film,",
+				"          title,",
+				"          description,",
+				"          release_year,",
+				"          language_id,",
+				"          original_language_id,",
+				"          rental_duration,",
+				"          rental_rate,",
+				"          length_min,",
+				"          replacement_cost,",
+				"          rating,",
+				"          special_features,",
+				"          last_update,",
+				"          language",
+				"     )) ~> DWH"
+			]
+		}
+	}
+}
