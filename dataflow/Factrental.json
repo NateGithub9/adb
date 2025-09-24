@@ -136,16 +136,7 @@
 				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     errorHandlingOption: 'stopOnFirstError',",
-				"     mapColumn(",
-				"          BK_inventory = inventory_id,",
-				"          BK_rental = rental_id,",
-				"          BK_payment = payment_id,",
-				"          SK_customer = customer_id,",
-				"          SK_staff = staff_id,",
-				"          SK_store = store_id,",
-				"          SK_film = film_id",
-				"     )) ~> Factrental"
+				"     errorHandlingOption: 'stopOnFirstError') ~> Factrental"
 			]
 		}
 	}

@@ -38,6 +38,13 @@
 						"type": "LinkedServiceReference"
 					},
 					"name": "staff"
+				},
+				{
+					"linkedService": {
+						"referenceName": "DWH",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourcedimstore"
 				}
 			],
 			"sinks": [
@@ -67,6 +74,9 @@
 				},
 				{
 					"name": "Fullname"
+				},
+				{
+					"name": "exists1"
 				}
 			],
 			"scriptLines": [
@@ -145,6 +155,21 @@
 				"     schemaName: 'dbo',",
 				"     tableName: 'staff',",
 				"     isolationLevel: 'READ_UNCOMMITTED') ~> staff",
+				"source(output(",
+				"          SK_store as integer,",
+				"          BK_store as integer,",
+				"          manager_full_name as string,",
+				"          country as string,",
+				"          city as string,",
+				"          address as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'Dim_Store',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> sourcedimstore",
 				"store, address join(store@address_id == address@address_id,",
 				"     joinType:'inner',",
 				"     matchType:'exact',",
@@ -176,7 +201,12 @@
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> filterselect",
 				"filterselect derive({Full name} = last_name+' '+first_name) ~> Fullname",
-				"Fullname sink(allowSchemaDrift: true,",
+				"Fullname, sourcedimstore exists(filterselect@BK_store == sourcedimstore@BK_store",
+				"     && {Full name} == manager_full_name",
+				"     && filterselect@country == sourcedimstore@country,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> exists1",
+				"exists1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          SK_store as integer,",
