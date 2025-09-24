@@ -11,6 +11,9 @@
 		"AzureSqlDatabase1_password": {
 			"value": ""
 		},
+		"DWH_password": {
+			"value": ""
+		},
 		"AzureSqlDatabase1_properties_typeProperties_server": {
 			"value": "server230925.database.windows.net"
 		},
@@ -18,6 +21,15 @@
 			"value": "DB_staging"
 		},
 		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"value": "server230925"
+		},
+		"DWH_properties_typeProperties_server": {
+			"value": "server230925.database.windows.net"
+		},
+		"DWH_properties_typeProperties_database": {
+			"value": "DWH"
+		},
+		"DWH_properties_typeProperties_userName": {
 			"value": "server230925"
 		}
 	}

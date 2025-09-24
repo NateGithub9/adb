@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDatabase1'"
 		},
+		"DWH_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'DWH'"
+		},
 		"AzureSqlDatabase1_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "server230925.database.windows.net"
@@ -24,6 +28,18 @@
 			"defaultValue": "DB_staging"
 		},
 		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "server230925"
+		},
+		"DWH_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "server230925.database.windows.net"
+		},
+		"DWH_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DWH"
+		},
+		"DWH_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "server230925"
 		}
@@ -39,7 +55,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Data flow1",
+						"name": "Dimstore",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -52,14 +68,16 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "dataflow1",
+								"referenceName": "Dimstore",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"actors": {},
-									"film": {},
-									"sink1": {},
-									"sink2": {}
+									"store": {},
+									"address": {},
+									"city": {},
+									"country": {},
+									"staff": {},
+									"dimstore": {}
 								}
 							},
 							"staging": {},
@@ -74,158 +92,10 @@
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
-				"annotations": [],
-				"lastPublishTime": "2025-09-23T09:08:34Z"
+				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DESTINATION')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "actors"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/actor')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "actor.csv",
-						"container": "csvfiles01"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "actor_id",
-						"type": "String"
-					},
-					{
-						"name": "first_name",
-						"type": "String"
-					},
-					{
-						"name": "last_name",
-						"type": "String"
-					},
-					{
-						"name": "last_update",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/film')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureBlobStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"fileName": "film.csv",
-						"container": "csvfiles01"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"name": "film_id",
-						"type": "String"
-					},
-					{
-						"name": "title",
-						"type": "String"
-					},
-					{
-						"name": "description",
-						"type": "String"
-					},
-					{
-						"name": "release_year",
-						"type": "String"
-					},
-					{
-						"name": "language_id",
-						"type": "String"
-					},
-					{
-						"name": "original_language_id",
-						"type": "String"
-					},
-					{
-						"name": "rental_duration",
-						"type": "String"
-					},
-					{
-						"name": "rental_rate",
-						"type": "String"
-					},
-					{
-						"name": "length",
-						"type": "String"
-					},
-					{
-						"name": "replacement_cost",
-						"type": "String"
-					},
-					{
-						"name": "rating",
-						"type": "String"
-					},
-					{
-						"name": "special_features",
-						"type": "String"
-					},
-					{
-						"name": "last_update",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+				"[concat(variables('factoryId'), '/dataflows/Dimstore')]"
 			]
 		},
 		{
@@ -264,7 +134,29 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"name": "[concat(parameters('factoryName'), '/DWH')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('DWH_properties_typeProperties_server')]",
+					"database": "[parameters('DWH_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('DWH_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('DWH_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Dimstore')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -272,112 +164,211 @@
 				"typeProperties": {
 					"sources": [
 						{
-							"dataset": {
-								"referenceName": "actor",
-								"type": "DatasetReference"
+							"linkedService": {
+								"referenceName": "AzureSqlDatabase1",
+								"type": "LinkedServiceReference"
 							},
-							"name": "actors"
-						},
-						{
-							"dataset": {
-								"referenceName": "film",
-								"type": "DatasetReference"
-							},
-							"name": "film"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "DESTINATION",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
+							"name": "store"
 						},
 						{
 							"linkedService": {
 								"referenceName": "AzureSqlDatabase1",
 								"type": "LinkedServiceReference"
 							},
-							"name": "sink2"
+							"name": "address"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabase1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "city"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabase1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "country"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabase1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "staff"
 						}
 					],
-					"transformations": [],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "DWH",
+								"type": "LinkedServiceReference"
+							},
+							"name": "dimstore"
+						}
+					],
+					"transformations": [
+						{
+							"name": "storeaddress"
+						},
+						{
+							"name": "citystoreaddress"
+						},
+						{
+							"name": "countrycityaddresss"
+						},
+						{
+							"name": "staffcountrycityaddress"
+						},
+						{
+							"name": "filterselect"
+						},
+						{
+							"name": "Fullname"
+						}
+					],
 					"scriptLines": [
 						"source(output(",
-						"          actor_id as string,",
-						"          first_name as string,",
-						"          last_name as string,",
-						"          last_update as string",
-						"     ),",
-						"     allowSchemaDrift: false,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> actors",
-						"source(output(",
-						"          film_id as string,",
-						"          title as string,",
-						"          description as string,",
-						"          release_year as string,",
-						"          language_id as string,",
-						"          original_language_id as string,",
-						"          rental_duration as string,",
-						"          rental_rate as string,",
-						"          length as string,",
-						"          replacement_cost as string,",
-						"          rating as string,",
-						"          special_features as string,",
-						"          last_update as string",
+						"          store_id as integer,",
+						"          manager_staff_id as integer,",
+						"          address_id as integer,",
+						"          last_update as timestamp",
 						"     ),",
 						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> film",
-						"actors sink(allowSchemaDrift: true,",
-						"     validateSchema: true,",
-						"     deletable:false,",
-						"     insertable:true,",
-						"     updateable:false,",
-						"     upsertable:false,",
-						"     format: 'table',",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
-						"film sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     format: 'table',",
 						"     store: 'sqlserver',",
 						"     schemaName: 'dbo',",
-						"     tableName: 'film',",
+						"     tableName: 'store',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> store",
+						"source(output(",
+						"          address_id as integer,",
+						"          address as string,",
+						"          address2 as string,",
+						"          district as string,",
+						"          city_id as integer,",
+						"          postal_code as string,",
+						"          phone as string,",
+						"          last_update as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'address',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> address",
+						"source(output(",
+						"          city_id as integer,",
+						"          city as string,",
+						"          country_id as short,",
+						"          last_update as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'city',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> city",
+						"source(output(",
+						"          country_id as short,",
+						"          country as string,",
+						"          last_update as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'country',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> country",
+						"source(output(",
+						"          staff_id as integer,",
+						"          first_name as string,",
+						"          last_name as string,",
+						"          address_id as integer,",
+						"          picture as binary,",
+						"          email as string,",
+						"          store_id as integer,",
+						"          active as boolean,",
+						"          username as string,",
+						"          password as string,",
+						"          last_update as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'staff',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> staff",
+						"store, address join(store@address_id == address@address_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> storeaddress",
+						"city, storeaddress join(city@city_id == address@city_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> citystoreaddress",
+						"country, citystoreaddress join(country@country_id == city@country_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> countrycityaddresss",
+						"staff, countrycityaddresss join(staff_id == manager_staff_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> staffcountrycityaddress",
+						"staffcountrycityaddress select(mapColumn(",
+						"          first_name,",
+						"          last_name,",
+						"          country,",
+						"          city,",
+						"          BK_store = store@store_id,",
+						"          address",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> filterselect",
+						"filterselect derive({Full name} = last_name+' '+first_name) ~> Fullname",
+						"Fullname sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          SK_store as integer,",
+						"          BK_store as integer,",
+						"          manager_full_name as string,",
+						"          country as string,",
+						"          city as string,",
+						"          address as string",
+						"     ),",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'Dim_Store',",
 						"     insertable: true,",
 						"     updateable: false,",
 						"     deletable: false,",
 						"     upsertable: false,",
-						"     recreate: true,",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     errorHandlingOption: 'stopOnFirstError',",
 						"     mapColumn(",
-						"          film_id,",
-						"          title,",
-						"          description,",
-						"          release_year,",
-						"          language_id,",
-						"          original_language_id,",
-						"          rental_duration,",
-						"          rental_rate,",
-						"          length,",
-						"          replacement_cost,",
-						"          rating,",
-						"          special_features,",
-						"          last_update",
-						"     )) ~> sink2"
+						"          BK_store,",
+						"          manager_full_name = {Full name},",
+						"          country,",
+						"          city,",
+						"          address",
+						"     )) ~> dimstore"
 					]
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/actor')]",
-				"[concat(variables('factoryId'), '/datasets/film')]",
-				"[concat(variables('factoryId'), '/datasets/DESTINATION')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]",
+				"[concat(variables('factoryId'), '/linkedServices/DWH')]"
 			]
 		}
 	]

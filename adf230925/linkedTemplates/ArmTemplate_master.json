@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDatabase1'"
 		},
+		"DWH_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'DWH'"
+		},
 		"AzureSqlDatabase1_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "server230925.database.windows.net"
@@ -24,6 +28,18 @@
 			"defaultValue": "DB_staging"
 		},
 		"AzureSqlDatabase1_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "server230925"
+		},
+		"DWH_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "server230925.database.windows.net"
+		},
+		"DWH_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DWH"
+		},
+		"DWH_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "server230925"
 		},
@@ -60,6 +76,9 @@
 					"AzureSqlDatabase1_password": {
 						"value": "[parameters('AzureSqlDatabase1_password')]"
 					},
+					"DWH_password": {
+						"value": "[parameters('DWH_password')]"
+					},
 					"AzureSqlDatabase1_properties_typeProperties_server": {
 						"value": "[parameters('AzureSqlDatabase1_properties_typeProperties_server')]"
 					},
@@ -68,6 +87,15 @@
 					},
 					"AzureSqlDatabase1_properties_typeProperties_userName": {
 						"value": "[parameters('AzureSqlDatabase1_properties_typeProperties_userName')]"
+					},
+					"DWH_properties_typeProperties_server": {
+						"value": "[parameters('DWH_properties_typeProperties_server')]"
+					},
+					"DWH_properties_typeProperties_database": {
+						"value": "[parameters('DWH_properties_typeProperties_database')]"
+					},
+					"DWH_properties_typeProperties_userName": {
+						"value": "[parameters('DWH_properties_typeProperties_userName')]"
 					}
 				}
 			},
