@@ -1,0 +1,210 @@
+{
+	"name": "Dimstore",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "store"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "address"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "city"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "country"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabase1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "staff"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "DWH",
+						"type": "LinkedServiceReference"
+					},
+					"name": "dimstore"
+				}
+			],
+			"transformations": [
+				{
+					"name": "storeaddress"
+				},
+				{
+					"name": "citystoreaddress"
+				},
+				{
+					"name": "countrycityaddresss"
+				},
+				{
+					"name": "staffcountrycityaddress"
+				},
+				{
+					"name": "filterselect"
+				},
+				{
+					"name": "Fullname"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          store_id as integer,",
+				"          manager_staff_id as integer,",
+				"          address_id as integer,",
+				"          last_update as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'store',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> store",
+				"source(output(",
+				"          address_id as integer,",
+				"          address as string,",
+				"          address2 as string,",
+				"          district as string,",
+				"          city_id as integer,",
+				"          postal_code as string,",
+				"          phone as string,",
+				"          last_update as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'address',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> address",
+				"source(output(",
+				"          city_id as integer,",
+				"          city as string,",
+				"          country_id as short,",
+				"          last_update as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'city',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> city",
+				"source(output(",
+				"          country_id as short,",
+				"          country as string,",
+				"          last_update as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'country',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> country",
+				"source(output(",
+				"          staff_id as integer,",
+				"          first_name as string,",
+				"          last_name as string,",
+				"          address_id as integer,",
+				"          picture as binary,",
+				"          email as string,",
+				"          store_id as integer,",
+				"          active as boolean,",
+				"          username as string,",
+				"          password as string,",
+				"          last_update as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'staff',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> staff",
+				"store, address join(store@address_id == address@address_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> storeaddress",
+				"city, storeaddress join(city@city_id == address@city_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> citystoreaddress",
+				"country, citystoreaddress join(country@country_id == city@country_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> countrycityaddresss",
+				"staff, countrycityaddresss join(staff_id == manager_staff_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> staffcountrycityaddress",
+				"staffcountrycityaddress select(mapColumn(",
+				"          first_name,",
+				"          last_name,",
+				"          country,",
+				"          city,",
+				"          BK_store = store@store_id,",
+				"          address",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> filterselect",
+				"filterselect derive({Full name} = last_name+' '+first_name) ~> Fullname",
+				"Fullname sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          SK_store as integer,",
+				"          BK_store as integer,",
+				"          manager_full_name as string,",
+				"          country as string,",
+				"          city as string,",
+				"          address as string",
+				"     ),",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'Dim_Store',",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     deletable: false,",
+				"     upsertable: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          BK_store,",
+				"          manager_full_name = {Full name},",
+				"          country,",
+				"          city,",
+				"          address",
+				"     )) ~> dimstore"
+			]
+		}
+	}
+}
