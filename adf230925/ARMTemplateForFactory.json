@@ -99,6 +99,89 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTable1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "DWH",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "row_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "BK_inventory",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "BK_rental",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "BK_payment",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "total_payment",
+						"type": "decimal",
+						"precision": 15,
+						"scale": 2
+					},
+					{
+						"name": "datekey_rental",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "datekey_return",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "datekey_payment",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SK_customer",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SK_staff",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SK_store",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SK_film",
+						"type": "int",
+						"precision": 10
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Fact_Rental"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/DWH')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -369,6 +452,164 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]",
 				"[concat(variables('factoryId'), '/linkedServices/DWH')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Factrental')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabase1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "rental"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabase1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "inventory"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabase1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "payment"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "AzureSqlTable1",
+								"type": "DatasetReference"
+							},
+							"name": "Factrental"
+						}
+					],
+					"transformations": [
+						{
+							"name": "rentalinventory"
+						},
+						{
+							"name": "paymentrentalinventory"
+						},
+						{
+							"name": "select"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          rental_id as integer,",
+						"          rental_date as timestamp,",
+						"          inventory_id as integer,",
+						"          customer_id as integer,",
+						"          return_date as timestamp,",
+						"          staff_id as integer,",
+						"          last_update as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'rental',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> rental",
+						"source(output(",
+						"          inventory_id as integer,",
+						"          film_id as integer,",
+						"          store_id as integer,",
+						"          last_update as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'inventory',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> inventory",
+						"source(output(",
+						"          payment_id as integer,",
+						"          customer_id as integer,",
+						"          staff_id as integer,",
+						"          rental_id as integer,",
+						"          amount as decimal(5,2),",
+						"          payment_date as timestamp,",
+						"          last_update as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'payment',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> payment",
+						"rental, inventory join(rental@inventory_id == inventory@inventory_id,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> rentalinventory",
+						"payment, rentalinventory join(payment@rental_id == rental@rental_id,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> paymentrentalinventory",
+						"paymentrentalinventory select(mapColumn(",
+						"          payment_id,",
+						"          customer_id = payment@customer_id,",
+						"          staff_id = payment@staff_id,",
+						"          rental_id = rental@rental_id,",
+						"          inventory_id = inventory@inventory_id,",
+						"          film_id,",
+						"          store_id",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select",
+						"select sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          row_id as integer,",
+						"          BK_inventory as integer,",
+						"          BK_rental as integer,",
+						"          BK_payment as integer,",
+						"          total_payment as decimal(15,2),",
+						"          datekey_rental as integer,",
+						"          datekey_return as integer,",
+						"          datekey_payment as integer,",
+						"          SK_customer as integer,",
+						"          SK_staff as integer,",
+						"          SK_store as integer,",
+						"          SK_film as integer",
+						"     ),",
+						"     deletable:false,",
+						"     insertable:true,",
+						"     updateable:false,",
+						"     upsertable:false,",
+						"     format: 'table',",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          BK_inventory = inventory_id,",
+						"          BK_rental = rental_id,",
+						"          BK_payment = payment_id,",
+						"          SK_customer = customer_id,",
+						"          SK_staff = staff_id,",
+						"          SK_store = store_id,",
+						"          SK_film = film_id",
+						"     )) ~> Factrental"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabase1')]",
+				"[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]"
 			]
 		}
 	]
