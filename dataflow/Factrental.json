@@ -1,6 +1,9 @@
 {
 	"name": "Factrental",
 	"properties": {
+		"folder": {
+			"name": "OLD"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [

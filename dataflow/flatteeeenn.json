@@ -1,6 +1,9 @@
 {
 	"name": "flatteeeenn",
 	"properties": {
+		"folder": {
+			"name": "OLD"
+		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
@@ -34,20 +37,20 @@
 			],
 			"scriptLines": [
 				"source(output(",
-				"          names_of_files as string",
+				"          name_of_files as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 derive(names_of_files = split(names_of_files,';')) ~> derivedColumn1",
+				"source1 derive(name = split(name_of_files,';')) ~> derivedColumn1",
 				"derivedColumn1 select(mapColumn(",
-				"          names_of_files",
+				"          name",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"select1 foldDown(unroll(names_of_files, names_of_files),",
+				"select1 foldDown(unroll(name, name),",
 				"     mapColumn(",
-				"          names_of_files",
+				"          names_of_files = name",
 				"     ),",
 				"     skipDuplicateMapInputs: false,",
 				"     skipDuplicateMapOutputs: false) ~> flatten1",
@@ -56,6 +59,7 @@
 				"     input(",
 				"          names_of_csv as string",
 				"     ),",
+				"     partitionFileNames:['OUTPUT.csv'],",
 				"     umask: 0022,",
 				"     preCommands: [],",
 				"     postCommands: [],",
@@ -63,7 +67,8 @@
 				"     skipDuplicateMapOutputs: true,",
 				"     mapColumn(",
 				"          names_of_csv = names_of_files",
-				"     )) ~> sink1"
+				"     ),",
+				"     partitionBy('hash', 1)) ~> sink1"
 			]
 		}
 	}
