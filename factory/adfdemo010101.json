@@ -1,0 +1,9 @@
+{
+	"name": "adfdemo010101",
+	"location": "francecentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "0a3a6fd3-603e-4d43-b31e-45d0afdc9f8a",
+		"tenantId": "b69e1565-f9a1-4ddd-81b9-7dfc26c11912"
+	}
+}
